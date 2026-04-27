@@ -1,164 +1,197 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 void main() => runApp(AlMurasilApp());
 
-class AlMurasilApp extends StatelessWidget {
+class AlMurasilApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Al-Murasil Hajj - አል-ሙራሲል"),
-          backgroundColor: Colors.green,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.mosque, size: 100, color: Colors.green),
-              SizedBox(height: 20),
-              Text("እንኳን ደህና መጡ", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-              Text("Hac Rehberine Hoş Geldiniz", style: TextStyle(fontSize: 18)),
-              Text("مرحباً بكم في دليل الحج", style: TextStyle(fontSize: 20, color: Colors.green)),
-              Text("Welcome to Hajj Guide", style: TextStyle(fontSize: 16)),
-              SizedBox(height: 40),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                onPressed: () {}, 
-                child: Text("ዱዓዎችና ሀዲሶች / Hadisler", style: TextStyle(color: Colors.white))
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-simport 'package:flutter/material.dart';
-
-void main() {
-  runApp(const AlmurasilHajApp());
+  _AlMurasilAppState createState() => _AlMurasilAppState();
 }
 
-class AlmurasilHajApp extends StatelessWidget {
-  const AlmurasilHajApp({super.key});
+class _AlMurasilAppState extends State<AlMurasilApp> {
+  bool _isDarkMode = false;
+  String _currentLanguage = 'Amharic';
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Almurasil-Haj',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  // Localization state
-  String currentLanguage = 'English';
-
-  final Map<String, Map<String, String>> localizedText = {
+  // ቋንቋ ለመቀየር (Localization Logic)
+  final Map<String, Map<String, String>> _localized = {
     'English': {
-      'title': 'Hajj Guide',
+      'title': 'Al-Murasil Hajj 🕋',
+      'sub': 'Begin Your Spiritual Journey',
+      'map': 'Map',
+      'sites': 'Historical Sites',
+      'sos': 'Emergency (SOS)',
       'health': 'Health Tracker',
-      'voice': 'Voice Guide',
-      'emergency': 'Emergency',
     },
     'Amharic': {
-      'title': 'የሐጅ መመሪያ',
+      'title': 'አል-ሙራሲል ሐጅ 🕋',
+      'sub': 'መንፈሳዊ ጉዞዎን ይጀምሩ',
+      'map': 'ካርታ',
+      'sites': 'ታሪካዊ ቦታዎች',
+      'sos': 'አደጋ ጊዜ (SOS)',
       'health': 'የጤና ክትትል',
-      'voice': 'የድምፅ መመሪያ',
-      'emergency': 'አደጋ ጊዜ',
     },
     'Arabic': {
-      'title': 'دليل الحج',
-      'health': 'مራقب الصحة',
-      'voice': 'دليل صوتي',
-      'emergency': 'طوارئ',
-    },
-    'Turkish': {
-      'title': 'Hac Rehberi',
-      'health': 'Sağlık Takibi',
-      'voice': 'Sesli Rehber',
-      'emergency': 'Acil Durum',
-    },
+      'title': 'المراسل الحاج 🕋',
+      'sub': 'ابدأ رحلتك الروحية',
+      'map': 'خريطة',
+      'sites': 'مواقع تاريخية',
+      'sos': 'طوارئ (SOS)',
+      'health': 'مراقب الصحة',
+    }
   };
 
-  void changeLanguage(String? lang) {
-    if (lang != null) {
-      setState(() {
-        currentLanguage = lang;
-      });
-    }
+  void _toggleLanguage(String lang) {
+    setState(() => _currentLanguage = lang);
   }
 
   @override
   Widget build(BuildContext context) {
-    var text = localizedText[currentLanguage]!;
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: _isDarkMode ? ThemeData.dark(useMaterial3: true) : ThemeData(primarySwatch: Colors.green, useMaterial3: true),
+      home: HomePage(
+        isDarkMode: _isDarkMode,
+        onThemeChanged: (val) => setState(() => _isDarkMode = val),
+        currentLang: _currentLanguage,
+        onLangChanged: _toggleLanguage,
+        text: _localized[_currentLanguage]!,
+      ),
+    );
+  }
+}
 
+class HomePage extends StatelessWidget {
+  final bool isDarkMode;
+  final Function(bool) onThemeChanged;
+  final String currentLang;
+  final Function(String) onLangChanged;
+  final Map<String, String> text;
+
+  HomePage({required this.isDarkMode, required this.onThemeChanged, required this.currentLang, required this.onLangChanged, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(text['title']!),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.green.shade700,
         foregroundColor: Colors.white,
         actions: [
-          DropdownButton<String>(
-            value: currentLanguage,
-            icon: const Icon(Icons.language, color: Colors.white),
-            dropdownColor: Colors.green[600],
-            underline: Container(),
-            onChanged: changeLanguage,
-            items: localizedText.keys.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value, style: const TextStyle(color: Colors.white)),
-              );
-            }).toList(),
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => onThemeChanged(!isDarkMode),
+          ),
+          PopupMenuButton<String>(
+            onSelected: onLangChanged,
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'Amharic', child: Text("አማርኛ")),
+              PopupMenuItem(value: 'English', child: Text("English")),
+              PopupMenuItem(value: 'Arabic', child: Text("العربية")),
+            ],
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+      body: SingleChildScrollView(
+        child: Column(
           children: [
-            _buildFeatureCard(Icons.health_and_safety, text['health']!, Colors.redAccent),
-            _buildFeatureCard(Icons.record_voice_over, text['voice']!, Colors.blueAccent),
-            _buildFeatureCard(Icons.mosque, 'Rituals', Colors.orangeAccent),
-            _buildFeatureCard(Icons.phone_in_talk, text['emergency']!, Colors.deepPurple),
+            Container(
+              height: 180,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.green.shade700,
+                image: DecorationImage(
+                  image: NetworkImage('https://unsplash.com'),
+                  fit: BoxFit.cover,
+                  opacity: 0.4,
+                ),
+              ),
+              child: Center(
+                child: Text(text['sub']!, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            GridView.count(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              padding: EdgeInsets.all(15),
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
+              children: [
+                _buildMenuCard(context, text['map']!, Icons.map, Colors.blue, () {}),
+                _buildMenuCard(context, text['sites']!, Icons.history_edu, Colors.brown, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HistoricalSitesPage()));
+                }),
+                _buildMenuCard(context, text['sos']!, Icons.emergency, Colors.red, () => _showSOS(context)),
+                _buildMenuCard(context, text['health']!, Icons.monitor_heart, Colors.orange, () {}),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFeatureCard(IconData icon, String label, Color color) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: InkWell(
-        onTap: () {},
+  void _showSOS(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("SOS Emergency", style: TextStyle(color: Colors.red)),
+        content: Text("Do you want to call the group leader or medical emergency?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+          ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.red), child: Text("Call Now", style: TextStyle(color: Colors.white))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuCard(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50, color: color),
+            Icon(icon, size: 45, color: color),
             const SizedBox(height: 10),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class HistoricalSitesPage extends StatelessWidget {
+  final FlutterTts flutterTts = FlutterTts();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Historical Sites"), backgroundColor: Colors.brown, foregroundColor: Colors.white),
+      body: ListView(
+        padding: EdgeInsets.all(15),
+        children: [
+          _siteCard("Kaaba", "The Holy house of Allah in Mecca.", "am-ET"),
+          _siteCard("Arafat", "The site of the main Hajj ritual.", "am-ET"),
+        ],
+      ),
+    );
+  }
+
+  Widget _siteCard(String name, String desc, String lang) {
+    return Card(
+      child: ListTile(
+        title: Text(name, style: TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(desc),
+        trailing: IconButton(
+          icon: Icon(Icons.volume_up, color: Colors.green),
+          onPressed: () async {
+            await flutterTts.setLanguage(lang);
+            await flutterTts.speak(desc);
+          },
         ),
       ),
     );
